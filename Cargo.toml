@@ -1,0 +1,16 @@
+[package]
+name = "tornado-cc"
+authors = ["Giovanni Ricevuto <rice7th@gmail.com>"]
+description = "A simple C Compiler"
+version = "0.1.0"
+edition = "2021"
+readme = "readme.txt"
+license = "Apache-2.0"
+keywords = ["c", "compiler"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+chrono = "0.4.26" #> for the preprocessor __DATE__ and __TIME__ macros
+clap = { version = "4.3.23", features = ["std", "derive"] } #> for command line option parsing
+phf = { version = "0.11.2", features = ["macros"] } #> compile time hashmap, useful for the lexer
