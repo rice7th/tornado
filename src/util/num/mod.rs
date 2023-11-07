@@ -11,12 +11,12 @@ pub enum NumberBase {
 #[derive(Debug)]
 pub enum NumberType {
     Float(f64),
-    Int(i128)
+    Int(u128)
 }
 
 impl Default for NumberType {
     fn default() -> Self {
-        return NumberType::Int(i128::default());
+        return NumberType::Int(u128::default());
     }
 }
 
@@ -28,7 +28,7 @@ impl NumberType {
         }
     }
 
-    pub fn int(&self) -> Option<&i128> {
+    pub fn int(&self) -> Option<&u128> {
         match self {
             Self::Int(int) => Some(int),
             _ => None
@@ -37,7 +37,6 @@ impl NumberType {
 }
 
 // This is going to be fun
-    // TODO: Move this into a NumberParser
     // - [x] simple number literals
     // - [ ] floats
     // - [x] hexadecimal notation
@@ -69,13 +68,14 @@ impl<'num> NumberParser<'num> {
     // we use a bool here since there is only 1 type of error that can happen
     // and using Status would make things MUCH harder
     #[inline]
-    fn push_int_digit(&mut self, digit: &u8, base: usize) -> bool {
-        let conv_digit = match self.convert_digit(digit) {
-            Some(d) => d,
-            None => return false // error
-        };
-        self.numtype = NumberType::Int((self.numtype.int().unwrap() * base as i128  + conv_digit as i128).into());
-        return true;
+    fn push_int_digit(&mut self, digit: &u8, base: usize) -> Option<()> {
+        let conv_digit = self.convert_digit(digit)?;
+        // num = num * base + digit
+        let num = self.numtype.int()? // number
+                              .checked_mul(base as u128)? // base
+                              .checked_add(conv_digit as u128)?; // digit
+        self.numtype = NumberType::Int(num);
+        return Some(());
     }
 
     // Supports even more than hexadecimal. Ever wanted base 36? We have it here! Kind of.
@@ -92,7 +92,9 @@ impl<'num> NumberParser<'num> {
     pub fn binary(&mut self) -> Status {
         dbg!(*self.scan.peek(2).unwrap_or(&0) as char);
         match self.scan.nth(1) {
-            Some(digit @ (b'0' | b'1')) => if !self.push_int_digit(digit, 2) { return error!(CompilerError::MALFORMED_NUMBER); },
+            Some(digit @ (b'0' | b'1')) => if self.push_int_digit(digit, 2).is_none() {
+                return error!(CompilerError::MALFORMED_NUMBER);
+            },
             Some(b' ' | b'\n' | b'\t') | None => return ok!(),
             Some(b'l' | b'L' | b'z' | b'Z' | b'u' | b'U') => return self.suffix(),
             _ => return error!(CompilerError::MALFORMED_NUMBER)
@@ -103,7 +105,9 @@ impl<'num> NumberParser<'num> {
 
     pub fn octal(&mut self) -> Status {
         match self.scan.nth(1) {
-            Some(digit @ b'0' ..= b'7') => if !self.push_int_digit(digit, 8) { return error!(CompilerError::MALFORMED_NUMBER); },
+            Some(digit @ b'0' ..= b'7') => if self.push_int_digit(digit, 8).is_none() {
+                return error!(CompilerError::MALFORMED_NUMBER);
+            },
             Some(b' ' | b'\n' | b'\t') | None => return ok!(),
             Some(b'l' | b'L' | b'z' | b'Z' | b'u' | b'U') => return self.suffix(),
             _ => return error!(CompilerError::MALFORMED_NUMBER)
@@ -114,7 +118,9 @@ impl<'num> NumberParser<'num> {
 
     pub fn decimal(&mut self) -> Status {
         match self.scan.peek(0) {
-            Some(digit @ b'0' ..= b'9') => if !self.push_int_digit(digit, 10) { return error!(CompilerError::MALFORMED_NUMBER); },
+            Some(digit @ b'0' ..= b'9') => if self.push_int_digit(digit, 10).is_none() {
+                return error!(CompilerError::MALFORMED_NUMBER);
+            },
             Some(b' ' | b'\n' | b'\t') | None => return ok!(),
             Some(b'l' | b'L' | b'z' | b'Z' | b'u' | b'U') => return self.suffix(),
             _ => return error!(CompilerError::MALFORMED_NUMBER)
@@ -127,7 +133,9 @@ impl<'num> NumberParser<'num> {
         match self.scan.nth(1) {
             Some(digit @ (b'0' ..= b'9'
                 | b'A' ..= b'F'
-                | b'a' ..= b'f')) => if !self.push_int_digit(digit, 16) { return error!(CompilerError::MALFORMED_NUMBER); },
+                | b'a' ..= b'f')) => if self.push_int_digit(digit, 16).is_none() {
+                    return error!(CompilerError::MALFORMED_NUMBER);
+                },
             Some(b' ' | b'\n' | b'\t') | None => return ok!(),
             Some(b'l' | b'L' | b'z' | b'Z' | b'u' | b'U') => return self.suffix(),
             _ => return error!(CompilerError::MALFORMED_NUMBER)

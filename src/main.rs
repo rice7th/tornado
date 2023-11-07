@@ -47,6 +47,7 @@ use tornado_cc::*;
 // TODO: Refactor this whole file.
 fn main() {
    // TODO: Actually use clap
+   // For now let's comment this and pass the source via string
    //let args = std::env::args().collect::<Vec<String>>();
    //let source = match args.get(1) {
    //   Some(arg) => std::fs::read_to_string(arg).unwrap(),
