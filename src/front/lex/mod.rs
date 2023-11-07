@@ -136,11 +136,14 @@ impl<'lex> Lexer<'lex> {
             self.scan.next();
         }
         self.scan.next();
-        return self.init()
+        return self.init();
     }
 
     // Very inefficient I am using .peek() and other weird tricks everywhere! 
     fn ident_or_keyword(&mut self) -> Status {
+        // Clear the buffer BEFORE acting on it
+        self.scan.reset_buffer();
+
         // Start pushing first character into self.buffer.
         // I've done This because an identifier can contain
         // a number, just not at the start of the identifier
@@ -171,15 +174,9 @@ impl<'lex> Lexer<'lex> {
         // Check if the current identifier is actually a keyword or, well, just an identifier.
         let ident = TokenType::IDENTIFIER(self.scan.buffer.clone().unwrap()); // TODO: Remove this .clone()
         let kw = KEYWORDS.get(buf).unwrap_or(&ident);
-        self.emit_token(kw.to_owned());
         
-
-        // advance the scanner to the current position after scanning a variable length identifier or keyword
-        // e.g. "int" -> advance by 3; "my_awesome_little_function" -> advance by 26
-        self.scan.nth(buf.len());
-
-        self.scan.buffer.as_mut().unwrap().reset(); // Clear to avoid bugs.
-        return self.init();
+        self.scan.buffer.as_mut().unwrap();
+        return self.emit_token(kw.to_owned());
     }
 
     // Just adds the number to the buffer without parsing it

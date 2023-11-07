@@ -47,11 +47,13 @@ use tornado_cc::*;
 // TODO: Refactor this whole file.
 fn main() {
    // TODO: Actually use clap
-   let args = std::env::args().collect::<Vec<String>>();
-   let source = match args.get(1) {
-      Some(arg) => std::fs::read_to_string(arg).unwrap(),
-      _ => panic!("A file must be provided.")
-   };
+   //let args = std::env::args().collect::<Vec<String>>();
+   //let source = match args.get(1) {
+   //   Some(arg) => std::fs::read_to_string(arg).unwrap(),
+   //   _ => panic!("A file must be provided.")
+   //};
+
+   let source = String::from("int main() {}");
 
    let mut diagnostics = util::diag::Diagnostics::new();
    
@@ -59,13 +61,19 @@ fn main() {
    lexer.lex();
    let tokens = lexer.get_tokens();
    println!("{:#?}", tokens);
+
+   // DEBUG TEST
+   // TODO: Move this atrocity into a separate test
+   // grab second token (in this case main)
    let a = match tokens[1].tokentype {
       front::lex::TokenType::IDENTIFIER(ref ident) => Some(ident),
       _ => None
    }.unwrap();
 
    // This is not going to look good at the pearly gates
-   println!("{:#?}", source.as_bytes().get(a.start..a.start+a.size)
+   // get the identifier and convert &[u8] to str
+   // pretty sure there's an easier way to do this
+   println!("{:#?}", source.as_bytes().get(a.start..a.start + a.size)
                                       .unwrap()
                                       .iter()
                                       .map(|f| *f as char)
@@ -75,7 +83,9 @@ fn main() {
    numpar.num();
    let mynum = numpar.get_num();
 
+   // Number parser convalidation
    dbg!(mynum);
    println!("{}", 0xDEADBEEF);
+
    dbg!(diagnostics);
 }

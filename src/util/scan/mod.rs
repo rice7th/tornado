@@ -87,19 +87,24 @@ impl<'scan, T: PartialEq, const L: usize> Scanner<'scan, T, L> {
     }
 
     pub fn push_to_buffer(&mut self) {
-        // ref mut is a thing what??
         if let Some(ref mut buf) = self.buffer {
             buf.size += 1;
         } else {
-            let mut newbuf = Buffer::default();
-            newbuf.start = self.location.position;
-            self.buffer = Some(newbuf);
+            // Initialize buffer if no buffer is present
+            self.reset_buffer();
+            self.buffer.as_mut().unwrap().size += 1;
         }
     }
 
     pub fn get_from_buffer(&mut self) -> Option<&'scan [T]> {
         let Some(ref buf) = self.buffer else { return None; };
-        return self.item_collection.get(buf.start..=buf.start + buf.size);
+        return self.item_collection.get(buf.start..buf.start + buf.size);
+    }
+
+    pub fn reset_buffer(&mut self) {
+        let mut buf = Buffer::default();
+        buf.start = self.location.position;
+        self.buffer = Some(buf);
     }
 }
 
