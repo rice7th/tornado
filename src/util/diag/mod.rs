@@ -6,7 +6,7 @@ use err::CompilerError;
 
 use super::scan::location::Location;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 /// # CompilerDiagnostic
 /// Either a `Warning` or an `Error`.
 // TODO: Info/Notes?

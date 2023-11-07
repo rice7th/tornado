@@ -320,10 +320,16 @@ impl<'lex> Lexer<'lex> {
     }
 
     pub fn lex(&mut self) {
-        let status = self.init();
-        match status {
-            Some(stat) => self.diag.push(Diagnostic { diagnostic: stat, location: self.scan.location }),
+        match self.init() {
+            Some(ref stat) => {
+                self.diag.push(Diagnostic { diagnostic: stat.clone(), location: self.scan.location });
+                match stat {
+                    CompilerDiagnostic::Error(_) => (),
+                    CompilerDiagnostic::Warning(_) => return self.lex(), // continue like nothing happened.
+                }
+            }
+            
             None => ()
-        };
+        }
     }
 }

@@ -1,5 +1,5 @@
 #[allow(non_camel_case_types)]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum CompilerError {
     /// # MALFORMED_NUMBER
     /// This error is triggered when there is an

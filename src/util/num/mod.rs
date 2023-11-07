@@ -1,7 +1,7 @@
 use crate::util::diag::err::CompilerError;
 
 use super::scan::Scanner;
-use super::diag::{Diagnostics, Status, Diagnostic};
+use super::diag::{Diagnostics, Status, Diagnostic, CompilerDiagnostic};
 use super::diag::{ok, error, warning};
 #[derive(Debug, Default)]
 pub enum NumberBase {
@@ -176,11 +176,17 @@ impl<'num> NumberParser<'num> {
     }
 
     pub fn num(&mut self) {
-        let status = self.init();
-        match status {
-            Some(stat) => self.diag.push(Diagnostic { diagnostic: stat, location: self.scan.location }),
+        match self.init() {
+            Some(ref stat) => {
+                self.diag.push(Diagnostic { diagnostic: stat.clone(), location: self.scan.location });
+                match stat {
+                    CompilerDiagnostic::Error(_) => (),
+                    CompilerDiagnostic::Warning(_) => return self.num(),
+                }
+            }
+            
             None => ()
-        };
+        }
     }
 
     pub fn get_num(&mut self) -> &NumberType {
