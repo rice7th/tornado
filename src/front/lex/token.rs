@@ -3,8 +3,8 @@ use crate::util::scan::buffer::Buffer;
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub struct Token {
-    tokentype: TokenType,
-    location: Location
+    pub tokentype: TokenType,
+    pub location: Location
 }
 
 impl Token {
@@ -67,7 +67,7 @@ pub enum TokenType {
     IDENTIFIER(Buffer),
     
     ATOM(Atom),
-
+    
     // End of File
     EOF
 }

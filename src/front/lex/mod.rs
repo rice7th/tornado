@@ -6,8 +6,8 @@
 //! Future plans include, but are not limited to:
 //! 
 //! - [ ] K&R C (the one with the weird arguments)
-//! - [ ] ANSI C / C89 / C90 (Work in progress)
-//! - [ ] C99
+//! - [x] ANSI C / C89 / C90 (Work in progress)
+//! - [x] C99
 //! - [ ] C11
 //! - [ ] C17
 //! - [ ] C23
@@ -182,22 +182,11 @@ impl<'lex> Lexer<'lex> {
         return self.init();
     }
 
-    // This is going to be fun
-    // TODO: Move this into a NumberParser
-    // - [ ] simple number literals
-    // - [ ] negative numbers
-    // - [ ] floats
-    // - [ ] hexadecimal notation
-    // - [ ] binary notation
-    // - [ ] octal notation
-    // - [ ] scientific notation
-    // - [ ] digit separators (1'000'000 -> 1000000)
-    // - [ ] number suffixes
-    // - [ ] hexadecimal floating points (see https://github.com/libsdl-org/SDL/blob/5b696996cdd94be95ccfe63b8693e0134fb2d571/src/audio/SDL_audiotypecvt.c#L104)
-    // See https://stackoverflow.com/questions/4825824/hexadecimal-floating-constant-in-c too
+    // Just adds the number to the buffer without parsing it
     fn number(&mut self) -> Status {
-        todo!("TBD");
+        ok!()   
     }
+
 
     fn comment(&mut self) -> Status {
         let mut cur = self.scan.peek(0);
@@ -224,7 +213,7 @@ impl<'lex> Lexer<'lex> {
         };
 
         match *current {
-            b'#' => match self.scan.peek(1) {
+            b'#' => match self.scan.peek(0) {
                 // Shebang, we ignore it, maybe we shouldn't
                 Some(b'!') => return self.ignore_line(),
                 Some(b'#') => return self.emit_token(TokenType::HASHTWICE),
@@ -326,7 +315,7 @@ impl<'lex> Lexer<'lex> {
                 return self.init();
             }
 
-            _ => ok!()
+            _ => ok!() // NO UTF-8 Support for now
         }
     }
 

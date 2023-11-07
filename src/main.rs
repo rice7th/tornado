@@ -49,15 +49,33 @@ fn main() {
    // TODO: Actually use clap
    let args = std::env::args().collect::<Vec<String>>();
    let source = match args.get(1) {
-      Some(arg) => arg.as_bytes(),
+      Some(arg) => std::fs::read_to_string(arg).unwrap(),
       _ => panic!("A file must be provided.")
    };
 
    let mut diagnostics = util::diag::Diagnostics::new();
    
-   let mut lexer = front::lex::Lexer::new(source, &mut diagnostics);
+   let mut lexer = front::lex::Lexer::new(source.as_bytes(), &mut diagnostics);
    lexer.lex();
    let tokens = lexer.get_tokens();
    println!("{:#?}", tokens);
+   let a = match tokens[1].tokentype {
+      front::lex::TokenType::IDENTIFIER(ref ident) => Some(ident),
+      _ => None
+   }.unwrap();
+
+   // This is not going to look good at the pearly gates
+   println!("{:#?}", source.as_bytes().get(a.start..a.start+a.size)
+                                      .unwrap()
+                                      .iter()
+                                      .map(|f| *f as char)
+                                      .collect::<Vec<char>>());
+
+   let mut numpar = util::num::NumberParser::new(b"0xDEADBEEF", &mut diagnostics);
+   numpar.num();
+   let mynum = numpar.get_num();
+
+   dbg!(mynum);
+   println!("{}", 0xDEADBEEF);
    dbg!(diagnostics);
 }

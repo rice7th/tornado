@@ -67,21 +67,21 @@ macro_rules! ok {
 
 macro_rules! warning {
     ($warning:expr) => {
-        Some(CompilerDiagnostic::Warning($warning))
+        Some(crate::util::diag::CompilerDiagnostic::Warning($warning))
     };
 
     ($warning:ident) => {
-        Some(CompilerDiagnostic::Warning(crate::warn::CompilerWarning::$warning))
+        Some(crate::util::diag::CompilerDiagnostic::Warning(crate::warn::CompilerWarning::$warning))
     }
 }
 
 macro_rules! error {
     ($error:expr) => {
-        Some(CompilerDiagnostic::Error($error))
+        Some(crate::util::diag::CompilerDiagnostic::Error($error))
     };
 
     ($error:ident) => {
-        Some(CompilerDiagnostic::Error(crate::warn::CompilerError::$error))
+        Some(crate::util::diag::CompilerDiagnostic::Error(crate::err::CompilerError::$error))
     }
 }
 

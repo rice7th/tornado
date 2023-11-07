@@ -79,8 +79,10 @@ impl<'scan, T: PartialEq, const L: usize> Scanner<'scan, T, L> {
 
     pub fn increment_location(&mut self) {
         self.location.position += 1;
+        self.location.column += 1;
         if self.peek(0) == Some(&self.newline) {
             self.location.line += 1;
+            self.location.column = 0;
         }
     }
 

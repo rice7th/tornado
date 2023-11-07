@@ -7,6 +7,7 @@
 // however..
 pub struct Location {
     pub position: usize,
+    pub column: usize,
     pub line: usize,
 }
 
