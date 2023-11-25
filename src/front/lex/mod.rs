@@ -204,110 +204,89 @@ impl<'lex> Lexer<'lex> {
 
     fn init(&mut self) -> Status {
         let Some(current) = self.scan.peek(0) else {
-            // Something tells me this isn't going to like work?
+            // Push EOF
             self.tokens.push(Token::new(TokenType::EOF, self.scan.location));
-            return None;
+            return ok!();
         };
 
-        match *current {
-            b'#' => match self.scan.peek(0) {
+        match (*current, self.scan.peek(1)) {
                 // Shebang, we ignore it, maybe we shouldn't
-                Some(b'!') => return self.ignore_line(),
-                Some(b'#') => return self.emit_token(TokenType::HASHTWICE),
-                _ => return self.emit_token(TokenType::HASH),
-            },
-            b'a' ..= b'z' | b'A' ..= b'Z' | b'_' => return self.ident_or_keyword(),
-            b'0' ..= b'9' => return self.number(),
-            b'(' => return self.emit_token(TokenType::LEFT_PAREN),
-            b'[' => return self.emit_token(TokenType::LEFT_BRACKET),
-            b'{' => return self.emit_token(TokenType::LEFT_BRACE),
-            b')' => return self.emit_token(TokenType::RIGHT_PAREN),
-            b']' => return self.emit_token(TokenType::RIGHT_BRACKET),
-            b'}' => return self.emit_token(TokenType::RIGHT_BRACE),
+            (b'#', Some(b'!')) => return self.ignore_line(),
+            (b'#', Some(b'#')) => return self.emit_token(TokenType::HASHTWICE),
+            (b'#', _) => return self.emit_token(TokenType::HASH),
+            (b'a' ..= b'z' | b'A' ..= b'Z' | b'_', _) => return self.ident_or_keyword(),
+            (b'0' ..= b'9', _) => return self.number(),
+            (b'(', _) => return self.emit_token(TokenType::LEFT_PAREN),
+            (b'[', _) => return self.emit_token(TokenType::LEFT_BRACKET),
+            (b'{', _) => return self.emit_token(TokenType::LEFT_BRACE),
+            (b')', _) => return self.emit_token(TokenType::RIGHT_PAREN),
+            (b']', _) => return self.emit_token(TokenType::RIGHT_BRACKET),
+            (b'}', _) => return self.emit_token(TokenType::RIGHT_BRACE),
 
-            b';' => return self.emit_token(TokenType::SEMICOLON),
-            b':' => return self.emit_token(TokenType::COLON),
-            b',' => return self.emit_token(TokenType::COMMA),
-            b'?' => return self.emit_token(TokenType::QUESTION),
+            (b';', _) => return self.emit_token(TokenType::SEMICOLON),
+            (b':', _) => return self.emit_token(TokenType::COLON),
+            (b',', _) => return self.emit_token(TokenType::COMMA),
+            (b'?', _) => return self.emit_token(TokenType::QUESTION),
 
             // TODO: add self.peek_double() and self.emit_token_triple()
-            b'.' => match self.scan.peek(1) { // A bit messy I'm sorry
-                Some(b'.') => match self.scan.peek(2) {
-                    Some(b'.') => {
-                        self.scan.nth(3);
-                        return self.emit_token(TokenType::TRIPLET);
-                    },
-                    _ => {
-                        return self.emit_token(TokenType::DOT)
-                    }
+            (b'.', Some(b'.')) => match self.scan.peek(2) { // A bit messy I'm sorry
+                Some(b'.') => {
+                    self.scan.nth(3);
+                    return self.emit_token(TokenType::TRIPLET);
                 },
-                _ => return self.emit_token(TokenType::DOT),
-            }
+                _ => return self.emit_token(TokenType::DOT)
+            },
+
+            (b'.', _) =>  return self.emit_token(TokenType::TRIPLET),
 
             // operators
-            b'+' => match self.scan.peek(1) {
-                Some(b'=') => return self.emit_token_double(TokenType::PLUSEQ),
-                Some(b'+') => return self.emit_token_double(TokenType::PLUSPLUS),
-                _ => return self.emit_token(TokenType::PLUS),
-            },
+            (b'+', Some(b'=')) => return self.emit_token_double(TokenType::PLUSEQ),
+            (b'+', Some(b'+')) => return self.emit_token_double(TokenType::PLUSPLUS),
+            (b'+', _)          => return self.emit_token(TokenType::PLUS),
 
-            b'-' => match self.scan.peek(1) {
-                Some(b'=') => return self.emit_token_double(TokenType::MINUSEQ),
-                Some(b'-') => return self.emit_token_double(TokenType::MINUSMINUS),
-                Some(b'>') => return self.emit_token_double(TokenType::ARROW),
-                _ => return self.emit_token(TokenType::MINUS),
-            },
+            (b'-', Some(b'=')) => return self.emit_token_double(TokenType::MINUSEQ),
+            (b'-', Some(b'-')) => return self.emit_token_double(TokenType::MINUSMINUS),
+            (b'-', Some(b'>')) => return self.emit_token_double(TokenType::ARROW),
+            (b'-', _)          => return self.emit_token(TokenType::MINUS),
 
-            b'*' => match self.scan.peek(1) {
-                Some(b'=') => return self.emit_token_double(TokenType::ASTERISKEQ),
-                _ => return self.emit_token(TokenType::ASTERISK),
-            },
+            (b'*', Some(b'=')) => return self.emit_token_double(TokenType::ASTERISKEQ),
+            (b'*', _)          => return self.emit_token(TokenType::ASTERISK),
 
-            b'/' => match self.scan.peek(1) {
-                Some(b'/') => self.comment(),
-                Some(b'*') => self.multiline_comment(),
-                Some(b'=') => return self.emit_token_double(TokenType::SLASHEQ),
-                _ => return self.emit_token(TokenType::SLASH),
-            },
+            (b'/', Some(b'/')) => self.comment(),
+            (b'/', Some(b'*')) => self.multiline_comment(),
+            (b'/', Some(b'=')) => return self.emit_token_double(TokenType::SLASHEQ),
+            (b'/', _)          => return self.emit_token(TokenType::SLASH),
 
-            b'=' => match self.scan.peek(1) {
-                Some(b'=') => return self.emit_token_double(TokenType::EQ),
-                _ => return self.emit_token(TokenType::DOUBLEEQ),
-            },
+            (b'=', Some(b'=')) => return self.emit_token_double(TokenType::EQ),
+            (b'=', _)          => return self.emit_token(TokenType::DOUBLEEQ),
 
-            b'!' => match self.scan.peek(1) {
-                Some(b'=') => return self.emit_token_double(TokenType::NEQ),
-                _ => return self.emit_token(TokenType::BANG),
-            },
+            (b'!', Some(b'=')) => return self.emit_token_double(TokenType::NEQ),
+            (b'!', _)          => return self.emit_token(TokenType::BANG),
 
-            b'~' => return self.emit_token(TokenType::TILDE),
+            (b'~', _)          => return self.emit_token(TokenType::TILDE),
 
             // TODO: add self.peek_double() and self.emit_token_triple() here too
-            b'<' => match self.scan.peek(1) {
-                Some(b'=') => return self.emit_token_double(TokenType::LESSTHAN),
-                Some(b'<') => match self.scan.peek(2) {
-                    Some(b'=') => {
-                        self.scan.nth(3);
-                        return self.emit_token(TokenType::DOUBLELESSEQ);
-                    }
-                    _ => return self.emit_token_double(TokenType::DOUBLELESS),
-                }
-                _ => return self.emit_token(TokenType::LESS),
+            (b'<', Some(b'=')) => return self.emit_token_double(TokenType::LESSTHAN),
+            (b'<', Some(b'<')) => match self.scan.peek(2) {
+                Some(b'=') => {
+                    self.scan.nth(3);
+                    return self.emit_token(TokenType::DOUBLELESSEQ);
+                },
+                _ => return self.emit_token_double(TokenType::DOUBLELESS),
             },
+            (b'<', _) => return self.emit_token(TokenType::LESS),
 
-            b'>' => match self.scan.peek(1) {
-                Some(b'=') => return self.emit_token_double(TokenType::GREATERTHAN),
-                Some(b'>') => match self.scan.peek(2) {
-                    Some(b'=') => {
-                        self.scan.nth(2);
-                        return self.emit_token(TokenType::DOUBLEGREATEREQ);
-                    }
-                    _ => return self.emit_token_double(TokenType::DOUBLEGREATER),
-                }
-                _ => return self.emit_token(TokenType::GREATER),
+            (b'>', Some(b'=')) => return self.emit_token_double(TokenType::GREATERTHAN),
+            (b'>', Some(b'>')) => match self.scan.peek(2) {
+                Some(b'=') => {
+                    self.scan.nth(3);
+                    return self.emit_token(TokenType::DOUBLEGREATEREQ);
+                },
+                _ => return self.emit_token_double(TokenType::DOUBLEGREATER),
             },
+            (b'>', _) => return self.emit_token(TokenType::GREATER),
 
-            b' ' | b'\t' | b'\n' | b'\r' => {
+            (b' ' | b'\t' | b'\n' | b'\r', _) => {
                 self.scan.next();
                 return self.init();
             }
