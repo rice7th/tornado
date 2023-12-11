@@ -116,7 +116,6 @@ impl<'lex> Lexer<'lex> {
         return &mut self.tokens;
     }
 
-    #[inline]
     fn emit_token(&mut self, tok: TokenType) -> Status {
         self.tokens.push(Token::new(tok, self.scan.location.clone()));
         // push the pointer
@@ -124,7 +123,6 @@ impl<'lex> Lexer<'lex> {
         return self.init();
     }
 
-    #[inline]
     fn emit_token_double(&mut self, tok: TokenType) -> Status {
         self.emit_token(tok);
         self.scan.nth(2);
@@ -139,7 +137,7 @@ impl<'lex> Lexer<'lex> {
         return self.init();
     }
 
-    // Very inefficient I am using .peek() and other weird tricks everywhere! 
+    // FIXME: Very inefficient I am using .peek() and other weird tricks everywhere! 
     fn ident_or_keyword(&mut self) -> Status {
         // Clear the buffer BEFORE acting on it
         self.scan.reset_buffer();
@@ -161,11 +159,12 @@ impl<'lex> Lexer<'lex> {
         // Push the next character into self.buffer until it isn't part of an
         // identifier anymore, so if the next char isn't any of the
         // following (a...z, A...Z, _, 0...9) characters.
-        while matches!(self.scan.peek(1), Some(b'a' ..= b'z' | b'A' ..= b'Z' | b'0' ..= b'9' | b'_')) {
+        while matches!(self.scan.peek(1), Some(b'a' ..= b'z'| b'A' ..= b'Z' | b'0' ..= b'9' | b'_')) {
             self.scan.push_to_buffer();
             self.scan.next();
         }
 
+        // If we cannot get anything from the buffer it means that we reached eof?
         let Some(ref buf) = self.scan.get_from_buffer() else {
             self.tokens.push(Token::new(TokenType::EOF, self.scan.location));
             return ok!();
