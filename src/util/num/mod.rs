@@ -187,5 +187,3 @@ impl<'num> NumberParser<'num> {
         &self.numtype
     }
 }
-
-

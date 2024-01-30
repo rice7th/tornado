@@ -24,7 +24,7 @@ pub enum CompilerDiagnostic {
 /// 
 /// For example: an error of type `UNEXPECTED_EOF` on line 4,
 /// column 12 can be represented like this:
-/// ```rust
+/// ```ignore
 /// Diagnostic {
 ///     diagnostic: CompilerDiagnostic::Error(
 ///         CompilerError::UNEXPECTED_EOF

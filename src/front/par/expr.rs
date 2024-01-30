@@ -41,7 +41,7 @@ pub enum Expr {
 }
 
 pub enum BinExpr {
-//  expr =                            expr[expr]
+//  ident = expr                      expr[expr]
     Assign(Box<Expr>, Box<Expr>),     Index(Box<Expr>, Box<Expr>),
 //  expr . expr                       expr -> expr
     MembOf(Box<Expr>, Box<Expr>),     MembOfRef(Box<Expr>, Box<Expr>),

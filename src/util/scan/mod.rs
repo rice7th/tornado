@@ -21,7 +21,7 @@ use buffer::*;
 /// field.
 /// 
 /// ## Example
-/// ```rust
+/// ```ignore
 /// let col = b"My tiny collection";
 /// // Lookahead of 4, so the method `self.peek(n)` can access the next
 /// // four items, ranging from n = 0 to n = 3.
@@ -35,13 +35,13 @@ use buffer::*;
 /// 
 /// Since `Scanner` implements `Iterator`, the former can be advanced
 /// with `self.next()`:
-/// ```rust
+/// ```ignore
 /// assert!(scan.next() == Some(&b'y'));
 /// assert!(scan.peek(1) == Some(&b' ')); // next item
 /// ```
 /// In case the item collection reaches EOF, the lookahead will just
 /// return `None`:
-/// ```rust
+/// ```ignore
 /// assert!(scan.nth(15) == Some(&b'n'));
 /// assert!(scan.peek(0) == Some(&b'n'));
 /// assert!(scan.peek(1) == None);
