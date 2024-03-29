@@ -16,16 +16,15 @@ use buffer::*;
 /// configurable lookahead, like Lexing, Parsing and
 /// so on.
 /// 
-/// A newline of type `T` needs to be provided in
-/// order to tack the line count in the `location`
-/// field.
+/// A newline of type `T` can be provided in order
+/// to tack the line count in the `location` field.
 /// 
 /// ## Example
 /// ```ignore
 /// let col = b"My tiny collection";
 /// // Lookahead of 4, so the method `self.peek(n)` can access the next
 /// // four items, ranging from n = 0 to n = 3.
-/// let mut scan: Scanner<u8, 4> = Scanner::new(col, 10u8);
+/// let mut scan: Scanner<u8, 4> = Scanner::new(col, b'\n');
 /// assert!(scan.peek(0) == Some(&b'M')); // current item
 /// assert!(scan.peek(1) == Some(&b'y')); // next item
 /// assert!(scan.peek(2) == Some(&b' ')); // 2nd next item
@@ -54,13 +53,13 @@ pub struct Scanner<'scan, T: PartialEq, const L: usize> {
     /// The Newline is the item `T` that when
     /// encountered it raises the `Location` line
     /// count and resets the column count.
-    pub newline: T,
+    pub newline: Option<T>,
     pub location: Location,
     pub buffer: Option<Buffer>,
 }
 
 impl<'scan, T: PartialEq, const L: usize> Scanner<'scan, T, L> {
-    pub fn new(item_collection: &'scan [T], newline: T) -> Scanner<'scan, T, L> {
+    pub fn new(item_collection: &'scan [T], newline: Option<T>) -> Scanner<'scan, T, L> {
         return Scanner {
             item_collection,
             ptr: 0,
@@ -80,7 +79,7 @@ impl<'scan, T: PartialEq, const L: usize> Scanner<'scan, T, L> {
     pub fn increment_location(&mut self) {
         self.location.position += 1;
         self.location.column += 1;
-        if self.peek(0) == Some(&self.newline) {
+        if self.newline != None && self.peek(0) == self.newline.as_ref() {
             self.location.line += 1;
             self.location.column = 0;
         }
@@ -117,7 +116,7 @@ impl<'scan, T: PartialEq,  const L: usize> Iterator for Scanner<'scan, T, L> {
         let next_item = self.item_collection.get(self.ptr);
         self.lookahead = array::from_fn(|i| self.item_collection.get(self.ptr + i));
         match next_item {
-            Some(nl) if nl == &self.newline => self.location.line += 1,
+            Some(nl) if Some(nl) == self.newline.as_ref() => self.location.line += 1,
             _ => {}
         }
         return next_item;

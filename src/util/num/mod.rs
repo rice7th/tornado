@@ -55,7 +55,7 @@ impl<'num> NumberParser<'num> {
         NumberParser {
             diag,
             numtype: NumberType::default(),
-            scan: Scanner::new(source, b'\n'),
+            scan: Scanner::new(source, Some(b'\n')),
         }
     }
 

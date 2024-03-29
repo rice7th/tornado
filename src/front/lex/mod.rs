@@ -105,7 +105,7 @@ pub struct Lexer<'lex> {
 impl<'lex> Lexer<'lex> {
     pub fn new(source: &'lex [u8], diag: &'lex mut Diagnostics) -> Self {
         Self {
-            scan: Scanner::new(source, b'\n'),
+            scan: Scanner::new(source, Some(b'\n')),
             tokens: vec![],
             diag
         }
