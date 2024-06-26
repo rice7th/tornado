@@ -47,7 +47,7 @@ pub enum TokenType {
 //  ~      &&               ||         ==
     TILDE, DOUBLEAMPERSAND, DOUBLEBAR, DOUBLEEQ,
 //  !=   >        >=           <     <=
-    NEQ, GREATER, GREATERTHAN, LESS, LESSTHAN,
+    NEQ, GREATER, GREATEREQ, LESS, LESSEQ,
 //  >>             <<          ^      ?
     DOUBLEGREATER, DOUBLELESS, CARET, QUESTION,
 //  #     ##         +=      -=       *=
@@ -76,7 +76,5 @@ pub enum TokenType {
 pub enum Atom {
     STRING(Buffer),
     CHAR(Buffer),
-    INT(Buffer),
-    UINT(Buffer),
-    FLOAT(Buffer),
+    NUM(Buffer),
 }

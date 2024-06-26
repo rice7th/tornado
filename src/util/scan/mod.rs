@@ -49,6 +49,11 @@ pub struct Scanner<'scan, T: PartialEq, const L: usize> {
     pub item_collection: &'scan [T],
     pub ptr: usize,
     pub lookahead: [Option<&'scan T>; L],
+    /// ## Lookback
+    /// Same as the lookahead, except it holds
+    /// previous values. Also `L` size just like
+    /// the `lookahead`.
+    pub lookback:  [Option<&'scan T>; L],
     /// ## Newline
     /// The Newline is the item `T` that when
     /// encountered it raises the `Location` line
@@ -64,6 +69,7 @@ impl<'scan, T: PartialEq, const L: usize> Scanner<'scan, T, L> {
             item_collection,
             ptr: 0,
             lookahead: array::from_fn(|i| item_collection.get(i)),
+            lookback: array::from_fn(|i| item_collection.get(i)),
             newline,
             location: Location::default(),
             buffer: None,
@@ -74,6 +80,12 @@ impl<'scan, T: PartialEq, const L: usize> Scanner<'scan, T, L> {
     pub fn peek(&self, n: usize) -> Option<&'scan T> {
         // TODO: Fix this garbage
         return self.lookahead.get(n).copied().flatten();
+    }
+
+    #[inline]
+    pub fn peek_back(&self, n: usize) -> Option<&'scan T> {
+        // same TODO applies here
+        return self.lookback.get(n).copied().flatten();
     }
 
     pub fn increment_location(&mut self) {
@@ -112,9 +124,10 @@ impl<'scan, T: PartialEq,  const L: usize> Iterator for Scanner<'scan, T, L> {
 
     fn next(&mut self) -> Option<Self::Item> {
         self.ptr += 1;
-        self.location.position = self.ptr;
-        let next_item = self.item_collection.get(self.ptr);
-        self.lookahead = array::from_fn(|i| self.item_collection.get(self.ptr + i));
+        self.location.position = self.ptr - 1;
+        let next_item = self.item_collection.get(self.ptr - 1);
+        self.lookahead = array::from_fn(|i| self.item_collection.get(self.ptr - 1 + i));
+        self.lookback  = array::from_fn(|i| self.item_collection.get(self.ptr.saturating_sub(i).saturating_sub(1)));
         match next_item {
             Some(nl) if Some(nl) == self.newline.as_ref() => self.location.line += 1,
             _ => {}

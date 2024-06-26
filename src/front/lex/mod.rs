@@ -154,7 +154,7 @@ impl<'lex> Lexer<'lex> {
             self.tokens.push(Token::new(TokenType::EOF, self.scan.location));
             return ok!();
         };
-        self.scan.push_to_buffer();
+        //self.scan.push_to_buffer(); // ?
 
         // Push the next character into self.buffer until it isn't part of an
         // identifier anymore, so if the next char isn't any of the
@@ -180,7 +180,12 @@ impl<'lex> Lexer<'lex> {
 
     // Just adds the number to the buffer without parsing it
     fn number(&mut self) -> Status {
-        ok!()   
+        self.scan.reset_buffer();
+        while matches!(self.scan.peek(0), Some(b'0' ..= b'9' | b'\'' | b'b' | b'o' | b'x' | b'p' | b'e')) {
+            self.scan.push_to_buffer();
+            self.scan.next();
+        }
+        return self.emit_token(TokenType::ATOM(Atom::NUM(self.scan.buffer.clone().unwrap())));
     }
 
 
@@ -208,7 +213,7 @@ impl<'lex> Lexer<'lex> {
             return ok!();
         };
 
-        match (*current, self.scan.peek(1)) {
+        match (*current, self.scan.peek(0)) {
                 // Shebang, we ignore it, maybe we shouldn't
             (b'#', Some(b'!')) => return self.ignore_line(),
             (b'#', Some(b'#')) => return self.emit_token(TokenType::HASHTWICE),
@@ -265,7 +270,7 @@ impl<'lex> Lexer<'lex> {
             (b'~', _)          => return self.emit_token(TokenType::TILDE),
 
             // TODO: add self.peek_double() and self.emit_token_triple() here too
-            (b'<', Some(b'=')) => return self.emit_token_double(TokenType::LESSTHAN),
+            (b'<', Some(b'=')) => return self.emit_token_double(TokenType::LESSEQ),
             (b'<', Some(b'<')) => match self.scan.peek(2) {
                 Some(b'=') => {
                     self.scan.nth(3);
@@ -275,7 +280,7 @@ impl<'lex> Lexer<'lex> {
             },
             (b'<', _) => return self.emit_token(TokenType::LESS),
 
-            (b'>', Some(b'=')) => return self.emit_token_double(TokenType::GREATERTHAN),
+            (b'>', Some(b'=')) => return self.emit_token_double(TokenType::GREATEREQ),
             (b'>', Some(b'>')) => match self.scan.peek(2) {
                 Some(b'=') => {
                     self.scan.nth(3);

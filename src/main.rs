@@ -42,7 +42,7 @@
  | ██████████████████████████████████████████████████░░░░░░░░░ |
  +-------------------------------------------------------====***/
 
-use tornado_cc::*;
+use tornado_cc::{util::scan::Scanner, *};
 
 // TODO: Refactor this whole file.
 fn main() {
@@ -53,15 +53,21 @@ fn main() {
    //   _ => panic!("A file must be provided.")
    //};
 
-   let source = String::from("int main() {}");
+   let source = String::from("13 + 2");
 
    let mut diagnostics = util::diag::Diagnostics::new();
    
    let mut lexer = front::lex::Lexer::new(source.as_bytes(), &mut diagnostics);
    lexer.lex();
-   let tokens = lexer.get_tokens();
+   let tokens = lexer.get_tokens().clone();
    println!("{:#?}", tokens);
 
+   let mut parser = front::par::Parser::new(&tokens, &mut diagnostics);
+
+   let my_expr = parser.expression();
+   dbg!(my_expr);
+
+   /*
    // DEBUG TEST
    // TODO: Move this atrocity into a separate test
    // grab second token (in this case main)
@@ -78,14 +84,6 @@ fn main() {
                                       .iter()
                                       .map(|f| *f as char)
                                       .collect::<Vec<char>>());
-
-   let mut numpar = util::num::NumberParser::new(b"0xDEADBEEF", &mut diagnostics);
-   numpar.num();
-   let mynum = numpar.get_num();
-
-   // Number parser convalidation
-   dbg!(mynum);
-   println!("{}", 0xDEADBEEF);
-
-   dbg!(diagnostics);
+   */
+   
 }

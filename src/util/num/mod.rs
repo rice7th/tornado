@@ -59,7 +59,6 @@ impl<'num> NumberParser<'num> {
         }
     }
 
-
     // we use a bool here since there is only 1 type of error that can happen
     // and using Status would make things MUCH harder
     #[inline]
