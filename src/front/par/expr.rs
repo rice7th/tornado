@@ -11,7 +11,7 @@
 //! - [ ] Type operations (typeof, cast)
 //! - [x] Ternary (? :)
 
-use crate::front::lex::{Atom, Token, TokenType};
+use crate::front::lex::{Token, TokenType};
 
 
 #[derive(Clone, Debug)]
