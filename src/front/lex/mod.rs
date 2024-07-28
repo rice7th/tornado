@@ -23,6 +23,7 @@ pub use token::TokenType;
 pub use token::Token;
 pub use token::Atom;
 
+use core::str;
 use std::vec;
 
 use crate::util::diag::*;
@@ -96,6 +97,10 @@ static KEYWORDS: phf::Map<&'static [u8], TokenType> = phf_map! {
 /// It currently accepts only ASCII source code
 /// and thus string literals, but UTF-8 support
 /// is planned.
+
+// TODO: impl Iterator for Lexer so that one can
+// easily iterate over each token by simply
+// calling .next() over the 
 pub struct Lexer<'lex> {
     diag: &'lex mut Diagnostics,
     scan: Scanner<'lex, u8, 3>, // TODO: Check if I can lower the lookahead by writing some tests.
@@ -185,7 +190,10 @@ impl<'lex> Lexer<'lex> {
             self.scan.push_to_buffer();
             self.scan.next();
         }
-        return self.emit_token(TokenType::ATOM(Atom::NUM(self.scan.buffer.clone().unwrap())));
+        let num = str::from_utf8(self.scan.get_from_buffer().unwrap())
+            .expect("Invalid utf-8!")
+            .to_owned();
+        return self.emit_token(TokenType::ATOM(Atom::NUM(num)));
     }
 
 

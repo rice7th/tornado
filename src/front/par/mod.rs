@@ -2,6 +2,8 @@
 //! Tornado's C parser.
 // TODO: Add actual grammar definition here
 
+use expr::Literal;
+
 use crate::util::{diag::*, scan::Scanner};
 
 use self::expr::Expr;
@@ -135,12 +137,18 @@ impl<'par> Parser<'par> {
     pub fn primary(&mut self) -> Box<Option<Expr>> {
         // primary        -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;    
         // In true C fashion, true, false and null are actually macros, not literals.
-        // TODO: Add like AST types
         match self.scan.peek(0) {
             Some(Token {
                 tokentype: TokenType::ATOM(atom),
                 ..
-            }) => return Box::new(Some(Expr::Atom(atom.clone()))),
+            }) => match atom {
+                Atom::STRING(string) => return Box::new(Some(Expr::Value(Literal::Str(string.as_bytes().to_vec())))),
+                Atom::CHAR(chr)      => return Box::new(Some(Expr::Value(Literal::Char(chr.as_bytes()[0])))),
+                Atom::NUM(num)       => todo!("Number parsing is almost done™"),
+            }
+            
+            
+            //return Box::new(Some(Expr::Value(atom.clone()))),
 
             None => todo!(),
             _ => todo!()

@@ -63,7 +63,7 @@ pub enum TokenType {
     INCLUDE, PRAGMA, IFDEF, DEFINE, IFNDEF, ELIF, ENDIF,
     LINE, ERROR, WARNING, UNDEF, DEFINED,
 
-    // Atoms and Identifiers
+    // Identifiers
     IDENTIFIER(Buffer),
     
     ATOM(Atom),
@@ -72,9 +72,10 @@ pub enum TokenType {
     EOF
 }
 
+// TODO: String interning
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub enum Atom {
-    STRING(Buffer),
-    CHAR(Buffer),
-    NUM(Buffer),
+    STRING(String),
+    CHAR(String),
+    NUM(String),
 }

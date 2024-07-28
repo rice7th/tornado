@@ -13,7 +13,6 @@
 
 use crate::front::lex::{Token, TokenType};
 
-
 #[derive(Clone, Debug)]
 // expr -> binary | unary | atom | group
 // op ->  "+" | "-" | "*" | "/" | "!" | "%"
@@ -31,14 +30,23 @@ pub enum Expr {
     // unary -> op expr
     Unary(UnaryExpr),
 
-    // atom -> NUMBER | STRING | CHAR
-    Atom(Atom),
-    
     // group -> "(" expr ")"
     Group(Box<Option<Expr>>),
 
     // misc -> ternary | cast
     Misc(MiscExpr),
+
+    // I.E. epsilon
+    Value(Literal),
+}
+
+#[derive(Clone, Debug)]
+pub enum Literal {
+    Int(isize),
+    UInt(usize),
+    Flt(f64),
+    Str(Vec<u8>),
+    Char(u8),
 }
 
 #[derive(Clone, Debug)]

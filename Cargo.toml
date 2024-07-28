@@ -12,5 +12,5 @@ keywords = ["c", "compiler"]
 
 [dependencies]
 chrono = "0.4.26" #> for the preprocessor __DATE__ and __TIME__ macros
-clap = { version = "4.3.23", features = ["std", "derive"] } #> for command line option parsing
+#clap = { version = "4.3.23", features = ["std", "derive"] } #> for command line option parsing
 phf = { version = "0.11.2", features = ["macros"] } #> compile time hashmap, useful for the lexer
