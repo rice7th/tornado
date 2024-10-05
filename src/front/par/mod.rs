@@ -4,7 +4,7 @@
 
 use expr::Literal;
 
-use crate::util::{diag::*, scan::Scanner};
+use crate::util::{diag::*, num::NumberParser, scan::Scanner};
 
 use self::expr::Expr;
 
@@ -144,7 +144,12 @@ impl<'par> Parser<'par> {
             }) => match atom {
                 Atom::STRING(string) => return Box::new(Some(Expr::Value(Literal::Str(string.as_bytes().to_vec())))),
                 Atom::CHAR(chr)      => return Box::new(Some(Expr::Value(Literal::Char(chr.as_bytes()[0])))),
-                Atom::NUM(num)       => todo!("Number parsing is almost done™"),
+                Atom::NUM(num)       => {
+                    let mut n = NumberParser::new(num.as_bytes(), &mut self.diag);
+                    n.num();
+                    // TODO: For now we support only integers. When I refactor this nightmare I'll fix this
+                    return Box::new(Some(Expr::Value(Literal::Int(*n.get_num().int().unwrap() as isize))));
+                }
             }
             
             

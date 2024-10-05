@@ -44,6 +44,7 @@ impl NumberType {
     // - [ ] number suffixes
     // - [ ] hexadecimal floating points (see https://github.com/libsdl-org/SDL/blob/5b696996cdd94be95ccfe63b8693e0134fb2d571/src/audio/SDL_audiotypecvt.c#L104)
     // See https://stackoverflow.com/questions/4825824/hexadecimal-floating-constant-in-c too
+// FIXME: Rewrite this garbage from 0 or refactor it completely
 pub struct NumberParser<'num> {
     pub diag: &'num mut Diagnostics,
     pub numtype: NumberType,
