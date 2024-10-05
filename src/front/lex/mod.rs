@@ -221,7 +221,7 @@ impl<'lex> Lexer<'lex> {
             return ok!();
         };
 
-        match (*current, self.scan.peek(0)) {
+        match (*current, self.scan.peek(1)) {
                 // Shebang, we ignore it, maybe we shouldn't
             (b'#', Some(b'!')) => return self.ignore_line(),
             (b'#', Some(b'#')) => return self.emit_token(TokenType::HASHTWICE),
