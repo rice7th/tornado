@@ -100,7 +100,7 @@ pub enum UnaryExpr {
     Neg(Box<Option<Expr>>),
 //  &expr           *expr
     Ref(Box<Option<Expr>>), Deref(Box<Option<Expr>>),
-//  sizeof(expr)       _Alignof(expr)
+//  sizeof(expr)               _Alignof(expr)
     Sizeof(Box<Option<Expr>>), Alignof(Box<Option<Expr>>),
 }
 
