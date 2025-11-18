@@ -6,7 +6,7 @@ use expr::Literal;
 
 use crate::util::{diag::*, num::NumberParser, scan::Scanner};
 
-use self::expr::Expr;
+use self::expr::{Expr, LiteralType};
 
 use super::lex::{Atom, Token, TokenType};
 
@@ -48,17 +48,18 @@ impl<'par> Parser<'par> {
      +----------------------------------------------------------------====***/
 
     pub fn expression(&mut self) -> Box<Option<Expr>> {
-        return self.equality();
+        return self.term();
     }
 
     pub fn equality(&mut self) -> Box<Option<Expr>> {
         // equality       -> comparison ( ( "!=" | "==" ) comparison )* ;
         let mut expr = self.comparison();
         while matches!(
-            self.scan.peek(0),
+            self.scan.peek(1),
             Some(Token { tokentype: TokenType::DOUBLEEQ | TokenType::NEQ, .. })
         ) {
-            let op = self.scan.peek_back(1);
+            self.scan.next();
+            let op = self.scan.peek(0);
             let rhs = self.comparison();
             expr = Expr::binary(expr.clone(), op.cloned(), rhs);
         }
@@ -69,15 +70,16 @@ impl<'par> Parser<'par> {
         // comparison     -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
         let mut expr = self.term();
         while matches!(
-            self.scan.peek(0),
+            self.scan.peek(1),
             Some(Token {
                 tokentype: TokenType::GREATER | TokenType::GREATEREQ
                          | TokenType::LESS    | TokenType::LESSEQ,
                 ..
             })
         ) {
+            self.scan.next();
+            let op = self.scan.peek(0);
             let rhs = self.term();
-            let op = self.scan.peek_back(1);
             expr = Expr::binary(expr.clone(), op.cloned(), rhs);
         }
         return expr;
@@ -85,17 +87,17 @@ impl<'par> Parser<'par> {
 
     pub fn term(&mut self) -> Box<Option<Expr>> {
         // term           -> factor ( ( "-" | "+" ) factor )* ;
-        let mut expr = self.factor();
+        let mut expr = self.factor(); // Atom(13)
         while matches!(
-            self.scan.peek(0),
+            dbg!(self.scan.peek(1)),
             Some(Token {
                 tokentype: TokenType::MINUS | TokenType::PLUS,
                 ..
             })
         ) {
-            // Advance?
+            self.scan.next();
+            let op = self.scan.peek(0);
             let rhs = self.factor();
-            let op = self.scan.peek_back(1);
             expr = Expr::binary(expr.clone(), op.cloned(), rhs);
         }
         return expr;
@@ -105,14 +107,15 @@ impl<'par> Parser<'par> {
         // factor         -> unary ( ( "/" | "*" ) unary )* ;  
         let mut expr = self.unary();
         while matches!(
-            self.scan.peek(0),
+            self.scan.peek(1),
             Some(Token {
                 tokentype: TokenType::SLASH | TokenType::ASTERISK,
                 ..
             })
         ) {
+            self.scan.next();
+            let op = self.scan.peek(0);
             let rhs = self.unary();
-            let op = self.scan.peek_back(1);
             expr = Expr::binary(expr.clone(), op.cloned(), rhs);
         }
         return expr;
@@ -127,8 +130,9 @@ impl<'par> Parser<'par> {
                 ..
             })
         ) {
+            self.scan.next();
+            let op = self.scan.peek(0);
             let rhs = self.unary();
-            let op = self.scan.peek_back(1);
             return Expr::unary(op.cloned(), rhs);
         }
         return self.primary();
@@ -142,21 +146,18 @@ impl<'par> Parser<'par> {
                 tokentype: TokenType::ATOM(atom),
                 ..
             }) => match atom {
-                Atom::STRING(string) => return Box::new(Some(Expr::Value(Literal::Str(string.as_bytes().to_vec())))),
-                Atom::CHAR(chr)      => return Box::new(Some(Expr::Value(Literal::Char(chr.as_bytes()[0])))),
-                Atom::NUM(num)       => {
-                    let mut n = NumberParser::new(num.as_bytes(), &mut self.diag);
-                    n.num();
-                    // TODO: For now we support only integers. When I refactor this nightmare I'll fix this
-                    return Box::new(Some(Expr::Value(Literal::Int(*n.get_num().int().unwrap() as isize))));
-                }
+                Atom::STRING(string) => return Box::new(Some(Expr::Value(Literal::new(string.clone(), LiteralType::Str)))),
+                Atom::CHAR(chr)      => return Box::new(Some(Expr::Value(Literal::new(chr.clone(), LiteralType::Chr)))),
+                Atom::NUM(num)       => return Box::new(Some(Expr::Value(Literal::new(num.clone(), LiteralType::Int)))),
             }
-            
             
             //return Box::new(Some(Expr::Value(atom.clone()))),
 
             None => todo!(),
-            _ => todo!()
+            _ => {
+                dbg!(self.scan.peek(0));
+                todo!()
+            }
         }
     }
 }

@@ -4,3 +4,8 @@
 //! TBD
 
 use super::expr::Expr;
+use super::stmt::Stmt;
+
+pub struct AST {
+    program: Stmt
+}

@@ -11,6 +11,8 @@
 //! - [ ] Type operations (typeof, cast)
 //! - [x] Ternary (? :)
 
+use core::str;
+
 use crate::front::lex::{Token, TokenType};
 
 #[derive(Clone, Debug)]
@@ -40,67 +42,77 @@ pub enum Expr {
     Value(Literal),
 }
 
+
+/// NOTE: Is this LiteralType or Just... IRType?
+/// like int, short, long, float, void, etc.
 #[derive(Clone, Debug)]
-pub enum Literal {
-    Int(isize),
-    UInt(usize),
-    Flt(f64),
-    Str(Vec<u8>),
-    Char(u8),
+pub enum LiteralType {
+    Int, Float, Str, Chr, Struct
 }
 
 #[derive(Clone, Debug)]
+pub struct Literal {
+    literal: String,
+    ltype: LiteralType,
+}
+
+impl Literal {
+    pub fn new(literal: String, ltype: LiteralType) -> Literal {
+        return Literal { literal, ltype };
+    }
+}
+#[derive(Clone, Debug)]
 pub enum BinExpr {
-//  ident = expr                      expr[expr]
+//  ident = expr                                      expr[expr]
     Assign(Box<Option<Expr>>, Box<Option<Expr>>),     Index(Box<Option<Expr>>, Box<Option<Expr>>),
-//  expr . expr                       expr -> expr
+//  expr . expr                                       expr -> expr
     MembOf(Box<Option<Expr>>, Box<Option<Expr>>),     MembOfRef(Box<Option<Expr>>, Box<Option<Expr>>),
-//  expr + expr                       expr += expr
+//  expr + expr                                       expr += expr
     Add(Box<Option<Expr>>, Box<Option<Expr>>),        AddAssign(Box<Option<Expr>>, Box<Option<Expr>>),
-//  expr - expr                       expr -= expr
+//  expr - expr                                       expr -= expr
     Sub(Box<Option<Expr>>, Box<Option<Expr>>),        SubAssign(Box<Option<Expr>>, Box<Option<Expr>>),
-//  expr * expr                       expr *= expr
+//  expr * expr                                       expr *= expr
     Mul(Box<Option<Expr>>, Box<Option<Expr>>),        MulAssign(Box<Option<Expr>>, Box<Option<Expr>>),
-//  expr / expr                       expr /= expr
+//  expr / expr                                       expr /= expr
     Div(Box<Option<Expr>>, Box<Option<Expr>>),        DivAssign(Box<Option<Expr>>, Box<Option<Expr>>),
-//  expr % expr                       expr %= expr
+//  expr % expr                                       expr %= expr
     Mod(Box<Option<Expr>>, Box<Option<Expr>>),        ModAssign(Box<Option<Expr>>, Box<Option<Expr>>),
-//  expr >> expr                      expr >>= expr
+//  expr >> expr                                      expr >>= expr
     Shr(Box<Option<Expr>>, Box<Option<Expr>>),        ShrAssign(Box<Option<Expr>>, Box<Option<Expr>>),
-//  expr << expr                      expr <<= expr
+//  expr << expr                                      expr <<= expr
     Shl(Box<Option<Expr>>, Box<Option<Expr>>),        ShlAssign(Box<Option<Expr>>, Box<Option<Expr>>),
 
-//  expr | expr                       expr |= expr 
+//  expr | expr                                       expr |= expr 
     Or(Box<Option<Expr>>, Box<Option<Expr>>),         OrAssign(Box<Option<Expr>>, Box<Option<Expr>>),
-//  expr & expr                       expr &= expr
+//  expr & expr                                       expr &= expr
     And(Box<Option<Expr>>, Box<Option<Expr>>),        AndAssign(Box<Option<Expr>>, Box<Option<Expr>>),
-//  expr ^ expr                       expr ^= expr
+//  expr ^ expr                                       expr ^= expr
     Xor(Box<Option<Expr>>, Box<Option<Expr>>),        XorAssign(Box<Option<Expr>>, Box<Option<Expr>>),
 
-//  expr || expr                      expr && expr
+//  expr || expr                                      expr && expr
     ShOr(Box<Option<Expr>>, Box<Option<Expr>>),       ShAnd(Box<Option<Expr>>, Box<Option<Expr>>),
 
-//  expr == expr                      expr != expr
+//  expr == expr                                      expr != expr
     Eq(Box<Option<Expr>>, Box<Option<Expr>>),         Neq(Box<Option<Expr>>, Box<Option<Expr>>),
-//  expr < expr                       expr > expr 
+//  expr < expr                                       expr > expr 
     Less(Box<Option<Expr>>, Box<Option<Expr>>),       Greater(Box<Option<Expr>>, Box<Option<Expr>>),
-//  expr <= expr                      expr >= expr 
+//  expr <= expr                                      expr >= expr 
     LessEq(Box<Option<Expr>>, Box<Option<Expr>>),     GreaterEq(Box<Option<Expr>>, Box<Option<Expr>>),
 }
 
 #[derive(Clone, Debug)]
 pub enum UnaryExpr {
-//  !expr           ~expr
-    Not(Box<Option<Expr>>), BinNot(Box<Option<Expr>>),
-//  ++expr             --expr
-    PreInc(Box<Option<Expr>>), PreDec(Box<Option<Expr>>),
-//  expr++              expr--
+//  !expr                       ~expr
+    Not(Box<Option<Expr>>),     BinNot(Box<Option<Expr>>),
+//  ++expr                      --expr
+    PreInc(Box<Option<Expr>>),  PreDec(Box<Option<Expr>>),
+//  expr++                      expr--
     PostInc(Box<Option<Expr>>), PostDec(Box<Option<Expr>>),
-//  -
+//  -expr
     Neg(Box<Option<Expr>>),
-//  &expr           *expr
+//  &expr                   *expr
     Ref(Box<Option<Expr>>), Deref(Box<Option<Expr>>),
-//  sizeof(expr)       _Alignof(expr)
+//  sizeof(expr)               _Alignof(expr)
     Sizeof(Box<Option<Expr>>), Alignof(Box<Option<Expr>>),
 }
 
