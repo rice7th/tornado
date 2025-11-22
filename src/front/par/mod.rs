@@ -87,7 +87,7 @@ impl<'par> Parser<'par> {
 
     pub fn term(&mut self) -> Box<Option<Expr>> {
         // term           -> factor ( ( "-" | "+" ) factor )* ;
-        let mut expr = self.factor(); // Atom(13)
+        let mut expr = self.factor();
         while matches!(
             dbg!(self.scan.peek(1)),
             Some(Token {
@@ -115,6 +115,7 @@ impl<'par> Parser<'par> {
         ) {
             self.scan.next();
             let op = self.scan.peek(0);
+            self.scan.next();
             let rhs = self.unary();
             expr = Expr::binary(expr.clone(), op.cloned(), rhs);
         }
@@ -141,7 +142,7 @@ impl<'par> Parser<'par> {
     pub fn primary(&mut self) -> Box<Option<Expr>> {
         // primary        -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;    
         // In true C fashion, true, false and null are actually macros, not literals.
-        match self.scan.peek(0) {
+        match self.scan.next() {
             Some(Token {
                 tokentype: TokenType::ATOM(atom),
                 ..
@@ -149,11 +150,14 @@ impl<'par> Parser<'par> {
                 Atom::STRING(string) => return Box::new(Some(Expr::Value(Literal::new(string.clone(), LiteralType::Str)))),
                 Atom::CHAR(chr)      => return Box::new(Some(Expr::Value(Literal::new(chr.clone(), LiteralType::Chr)))),
                 Atom::NUM(num)       => return Box::new(Some(Expr::Value(Literal::new(num.clone(), LiteralType::Int)))),
-            }
-            
-            //return Box::new(Some(Expr::Value(atom.clone()))),
+            },
 
-            None => todo!(),
+            Some(Token { tokentype: TokenType::EOF, .. }) => return Box::new(Some(Expr::EOF)),
+
+            None => {
+                dbg!(self.scan.peek(0));
+                todo!()
+            },
             _ => {
                 dbg!(self.scan.peek(0));
                 todo!()

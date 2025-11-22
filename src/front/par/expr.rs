@@ -40,6 +40,9 @@ pub enum Expr {
 
     // I.E. epsilon
     Value(Literal),
+    
+    // End of expression
+    EOF,
 }
 
 

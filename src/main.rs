@@ -53,7 +53,7 @@ fn main() {
    //   _ => panic!("A file must be provided.")
    //};
 
-   let source = String::from("float f = 10");
+   let source = String::from("15 + 2");
 
    let mut diagnostics = util::diag::Diagnostics::new();
    
