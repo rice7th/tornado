@@ -53,7 +53,7 @@ fn main() {
    //   _ => panic!("A file must be provided.")
    //};
 
-   let source = String::from("13 + 2");
+   let source = String::from("float f = 10");
 
    let mut diagnostics = util::diag::Diagnostics::new();
    
@@ -85,5 +85,20 @@ fn main() {
                                       .map(|f| *f as char)
                                       .collect::<Vec<char>>());
    */
-   
+
+
+  // TODO: Make a better compiler driver api
+  // like
+  // ```rust
+  // let mut cc = tornado::CC::new(); // return compiler driver
+  // cc.src("main.c").output("main")
+  //    .include("./include/")
+  //    .define("MY_MACRO")
+  //    .opt(3) // opt_level 3 or custom
+  //    .link("m") // math lib
+  //    .static()
+  //    .compile(); // compile
+  // ```
+  // So one can like actually compile more stuff in parallel by just using
+  // rust thread.
 }
